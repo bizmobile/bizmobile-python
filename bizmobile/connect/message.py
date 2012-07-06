@@ -71,7 +71,7 @@ class Message(BaseAPI):
             # u'ctime': u'2012-01-23T17:40:23',
             # u'id': 1
         # }
-        # # return self._meta.response(push, sample, self._meta.api_name)
+        # return self._meta.response(push, sample, self._meta.api_name)
         return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
 
     def status_message(self, opid, page={"offset": 0, "limit": 20}):
@@ -133,4 +133,5 @@ class Message(BaseAPI):
                  # u'ctime': u'2012-01-24T13:41:16',
                  # u'utime': u'2012-01-30T15:29:44'
             # } for num in range(0, 10)]})
-        return self._meta.responses(status, status.get(**page))
+        query = dict({"opid": opid}.items() + page.items())
+        return self._meta.responses(status, status.get(**query))
