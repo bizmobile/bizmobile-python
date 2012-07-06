@@ -23,7 +23,7 @@ class Message(BaseAPI):
     class Meta:
         api_name = "message"
         api_version = "v1"
-        secure = False
+        secure = True
         response = Response
         responses = PagerResponse
         client = slumber.API
@@ -32,6 +32,7 @@ class Message(BaseAPI):
         """ MessageAPI  """
         super(Message, self).__init__(*args, **kwargs)
         self._client = self._meta.client(self.get_base_url(), auth=kwargs.pop("auth", None))
+        self._meta.secure = kwargs.get("secure", True)
 
     def get_base_url(self):
         schema = "https" if self._meta.secure else "http"
