@@ -19,6 +19,7 @@ __all__ = ["Message"]
 
 
 class Message(BaseAPI):
+    """ MessageAPI  """
 
     class Meta:
         api_name = "message"
@@ -29,10 +30,14 @@ class Message(BaseAPI):
         client = slumber.API
 
     def __init__(self, *args, **kwargs):
-        """ MessageAPI  """
+        """
+
+        :param secure: https=True or http=False
+        """
+        self._meta.secure = kwargs.pop("secure", self._meta.secure)
+
         super(Message, self).__init__(*args, **kwargs)
         self._client = self._meta.client(self.get_base_url(), auth=kwargs.pop("auth", None))
-        self._meta.secure = kwargs.get("secure", True)
 
     def get_base_url(self):
         schema = "https" if self._meta.secure else "http"
