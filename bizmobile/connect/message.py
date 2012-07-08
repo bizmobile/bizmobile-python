@@ -8,7 +8,7 @@ from ..api import BaseAPI
 # from ..serialize import Serializer
 from ..responsor import (
     Response,
-    PagerResponse
+    Responses
 )
 
 
@@ -26,7 +26,7 @@ class Message(BaseAPI):
         api_version = "v1"
         secure = True
         response = Response
-        responses = PagerResponse
+        responses = Responses
         client = slumber.API
 
     def __init__(self, *args, **kwargs):
@@ -141,3 +141,7 @@ class Message(BaseAPI):
             # } for num in range(0, 10)]})
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query))
+
+#    def tester(self):
+#        message = self._client.message
+#        return self._meta.responses(message, message.get())
