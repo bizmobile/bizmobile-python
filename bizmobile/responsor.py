@@ -89,7 +89,11 @@ class Responses(object):
                     responses = self._get_responses(**query)
 
                 clone = self._clone(responses, _iteration=False)
-                clone._query.update({"id__in": clone._get_ids()})
+                try:
+                    #  XXX: resource uri がない場合
+                    clone._query.update({"id__in": clone._get_ids()})
+                except IndexError:
+                    pass
                 return clone
 
             if not self._responses:
