@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
+import warnings
+
 # external
-# import urlparse
 import slumber
 
 ## base
 from ..api import BaseAPI
-# from ..serialize import Serializer
 from ..responsor import (
     Response,
     Responses
 )
+# from ..serialize import Serializer
 
 
 # 以下を message 以外で使用するなら BaseAPIへ移動
@@ -71,16 +72,9 @@ class Message(BaseAPI):
             {"subject": subject, "body": body, "mailfrom": mailfrom, "mailto": to} for to in mailto]
         push = self._client.operation.push
         serializer = push.get_serializer()
-        # sample = {
-            # u'opid': u'877280C4-89D6-49A7-B401-E3F27ED03144',
-            # u'utime': u'2012-01-31T10:40:16',
-            # u'ctime': u'2012-01-23T17:40:23',
-            # u'id': 1
-        # }
-        # return self._meta.response(push, sample, self._meta.api_name)
         return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
 
-    def status_message(self, opid, page={"offset": 0, "limit": 20}):
+    def status_message(self, opid, **kwargs):
         """
 
         Read the `Message Interface <https://developer.bizmo.in/display/API/Message+Interface>`_
@@ -120,28 +114,17 @@ class Message(BaseAPI):
         :rtype: object
         :return: PagerResponse Object
         """
+        page = kwargs.get("page", {"offset": 0, "limit": 20})
+        if "page" in kwargs:
+            warnings.warn("'page' is a deprecated method & will be removed by next version.")
+
         status = self._client.operation.status
-        # return self._meta.responses(status,
-            # {u'meta': {
-                # u'limit': 20,
-                # u'next': None,
-                # u'offset': 0,
-                # u'previous': None,
-                # u'total_count': 10
-            # },
-            # u'objects': [
-                # {u'id': u"{0}".format(num),
-                 # u"did": u"d-1234567{0}".format(num),
-                 # u"read": True,
-                 # u"read_date": u'2012-01-30T15:29:4{0}'.format(num),
-                 # u'status': u'success',
-                 # u"reason": "",
-                 # u'ctime': u'2012-01-24T13:41:16',
-                 # u'utime': u'2012-01-30T15:29:44'
-            # } for num in range(0, 10)]})
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query))
 
-#    def tester(self):
+#    def tester(self, **kwargs):
+#        page = kwargs.get("page", {"offset": 0, "limit": 20})
+#        if "page" in kwargs:
+#            warnings.warn("'page' is a deprecated method & will be removed by next version.")
 #        message = self._client.message
-#        return self._meta.responses(message, message.get())
+#        return self._meta.responses(message, message.get(**page))

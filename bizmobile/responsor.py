@@ -51,9 +51,9 @@ class Responses(object):
     def __init__(self, client, responses={}, query={}, **kwargs):
         self._client = client
         self._query = query
-        self._iteration = True
         self._response_class = kwargs.get("response_class", Response)
         self._set_objects(responses)  # set _responses, _meta, _objects
+        self._iteration_num = None
 
     def __repr__(self):
         return "<Responses {0} ({1}/{2})>".format(
@@ -67,12 +67,16 @@ class Responses(object):
         if len(self) < 1:
             raise StopIteration()
         index = 0
+        length = 0
         klass = copy.deepcopy(self)
         while 1:
             try:
                 yield klass._wrap_response(klass._objects[index])
                 index += 1
+                length += 1
             except KeyError:
+                if self._iteration_num <= length and self._iteration_num is not None:
+                    raise StopIteration()
                 klass = klass._next()
                 index = 0
 
@@ -83,12 +87,13 @@ class Responses(object):
                 stop = index.stop
                 # step = index.step
 
-                responses = self._responses
-                if stop > self._objects_count:
-                    query = dict(self._query.items() + {"limit": stop - start, "offset": start}.items())
-                    responses = self._get_responses(**query)
+                limit = stop - start
+                self._iteration_num = limit
+                query = {"limit": limit, "offset": start}
+                responses = self._get_responses(**query)
 
-                clone = self._clone(responses, _iteration=False)
+                clone = self._clone(
+                    responses, _iteration_num=self._iteration_num)
                 try:
                     #  XXX: resource uri がない場合
                     clone._query.update({"id__in": clone._get_ids()})
@@ -127,13 +132,13 @@ class Responses(object):
 
     def _next(self):
         """ request next page """
-        if not self._meta["next"] or self._iteration is False:
+        if not self._meta["next"]:
             raise StopIteration()
         return self._clone(self._request(self._meta["next"]))
 
     def _previous(self):
         """ request previous page """
-        if not self._meta["previous"] or self._iteration is False:
+        if not self._meta["previous"]:
             raise StopIteration()
         return self._clone(self._request(self._meta["previous"]))
 
@@ -141,7 +146,7 @@ class Responses(object):
         """ set cache object """
         self._set_objects(self._get_responses())
 
-    def _set_objects(self, responses=dict()):
+    def _set_objects(self, responses={}):
         """ set cache object """
         self._responses = responses
         self._meta = responses and responses["meta"]
