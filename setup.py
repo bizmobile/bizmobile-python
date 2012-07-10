@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 version = '0.3.1'
 name = 'python-bizmobile'
 short_description = 'Client for BizMobile API.'
-long_description = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+long_description = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
 
 def fullsplit(path, result=None):

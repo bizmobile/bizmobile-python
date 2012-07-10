@@ -1,0 +1,3 @@
+include tox.in
+include README.rst
+recursive-include tests *

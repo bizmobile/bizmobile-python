@@ -33,9 +33,13 @@ class Message(BaseAPI):
     def __init__(self, *args, **kwargs):
         """
 
-        :param secure: https=True or http=False
+        :param bool secure: https=True or http=False
+        :param str api_name:
+        :param str api_version:
         """
         self._meta.secure = kwargs.pop("secure", self._meta.secure)
+        self._meta.api_name = kwargs.pop("api_name", self._meta.api_name)
+        self._meta.api_version = kwargs.pop("api_version", self._meta.api_version)
 
         super(Message, self).__init__(*args, **kwargs)
         self._client = self._meta.client(self.get_base_url(), auth=kwargs.pop("auth", None))
@@ -122,9 +126,10 @@ class Message(BaseAPI):
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query))
 
-#    def tester(self, **kwargs):
-#        page = kwargs.get("page", {"offset": 0, "limit": 20})
-#        if "page" in kwargs:
-#            warnings.warn("'page' is a deprecated method & will be removed by next version.")
-#        message = self._client.message
-#        return self._meta.responses(message, message.get(**page))
+    def tester(self, **kwargs):
+        """ test method """
+        page = kwargs.get("page", {"offset": 0, "limit": 20})
+        if "page" in kwargs:
+            warnings.warn("'page' is a deprecated method & will be removed by next version.")
+        message = self._client.message
+        return self._meta.responses(message, message.get(**page))
