@@ -83,11 +83,11 @@ class Responses(object):
     def __getitem__(self, index):
         try:
             if isinstance(index, slice):
+                # step = index.step
                 start = index.start or 0
                 stop = index.stop
-                # step = index.step
-
                 limit = stop - start
+
                 self._iteration_num = limit
                 query = {"limit": limit, "offset": start}
                 responses = self._get_responses(**query)
