@@ -48,9 +48,10 @@ class Response(object):
 
 class Responses(object):
 
-    def __init__(self, client, responses={}, query={}, **kwargs):
+    def __init__(self, client, responses=None, query=None, **kwargs):
         self._client = client
-        self._query = query
+        self._kwargs = kwargs
+        self._query = query or dict()
         self._response_class = kwargs.get("response_class", Response)
         self._set_objects(responses)  # set _responses, _meta, _objects
         self._iteration_num = None
@@ -89,11 +90,10 @@ class Responses(object):
                 limit = stop - start
 
                 self._iteration_num = limit
-                query = {"limit": limit, "offset": start}
+                query = dict(self._query.items() + {"limit": limit, "offset": start}.items())
                 responses = self._get_responses(**query)
 
-                clone = self._clone(
-                    responses, _iteration_num=self._iteration_num)
+                clone = self._clone(responses, _iteration_num=self._iteration_num)
                 try:
                     #  XXX: resource uri がない場合
                     clone._query.update({"id__in": clone._get_ids()})
@@ -107,7 +107,7 @@ class Responses(object):
         except KeyError as err:
             raise IndexError(err)
 
-    def _clone(self, responses={}, klass=None, **kwargs):
+    def _clone(self, responses=None, klass=None, **kwargs):
         responses = responses or self._responses
         klass = klass or self.__class__
 
@@ -146,7 +146,7 @@ class Responses(object):
         """ set cache object """
         self._set_objects(self._get_responses())
 
-    def _set_objects(self, responses={}):
+    def _set_objects(self, responses):
         """ set cache object """
         self._responses = responses
         self._meta = responses and responses["meta"]

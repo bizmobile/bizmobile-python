@@ -124,7 +124,7 @@ class Message(BaseAPI):
 
         status = self._client.operation.status
         query = dict({"opid": opid}.items() + page.items())
-        return self._meta.responses(status, status.get(**query))
+        return self._meta.responses(status, status.get(**query), query)
 
     def tester(self, **kwargs):
         """ test method """
