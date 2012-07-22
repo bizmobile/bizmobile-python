@@ -1,3 +1,4 @@
 include tox.in
 include README.rst
+include HISTORY.rst
 recursive-include tests *

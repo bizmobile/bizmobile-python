@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 # from setuptools.command.test import test
 
-version = '0.3.1'
+version = '0.4.1'
 name = 'python-bizmobile'
 short_description = 'Client for BizMobile API.'
 long_description = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
@@ -46,10 +46,11 @@ setup(
     description=short_description,
     long_description=long_description,
     classifiers=[
-       "Development Status :: 3 - Alpha",
+       # "Development Status :: 3 - Alpha",
        # "Development Status :: 4 - Beta",
+       "Development Status :: 5 - Production/Stable",
        "Framework :: Django",
-       "Framework :: Tastypie",
+       # "Framework :: Tastypie",
        'Environment :: Console',
        "Environment :: Web Environment",
        "Intended Audience :: Developers",
@@ -60,8 +61,8 @@ setup(
        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords=['tastypie', 'client', 'django', 'rest', 'api', ],
-    # author='Tatsuo Ikeda',
-    # author_email='jp.ne.co.jp at gmail',
+    author='Tatsuo Ikeda',
+    author_email='jp.ne.co.jp at gmail',
     url='https://github.com/bizmobile/bizmobile-python',
     # license='MIT License',
     packages=find_packages(),
