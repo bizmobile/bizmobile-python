@@ -8,11 +8,13 @@ from testcases import TestServerTestCase
 import bizmobile
 
 
-class PaginatorTestCase(TestServerTestCase):
+class ToValuesTestCase(TestServerTestCase):
 
     def setUp(self):
-        super(PaginatorTestCase, self).setUp()
+        super(ToValuesTestCase, self).setUp()
         self.start_test_server()
+        self.api = bizmobile.connect.message(
+            server="127.0.0.1:8001", api_name="base", secure=False)
         call_command('loaddata', 'base_data.json')
 
     def tearDown(self):
@@ -21,14 +23,15 @@ class PaginatorTestCase(TestServerTestCase):
     def test_to_values1(self):
         from base.models import Message
 
-        api = bizmobile.connect.message(
-            server="127.0.0.1:8001", api_name="base", secure=False)
-
         vqs = Message.objects.extra(
             select={'mailto': 'id'}).values("subject", "body", "mailfrom", "mailto")
 
-        self.assrtTrue(isinstance(api._to_values(vqs), (list, set)))
-        self.assrtTrue(isinstance(api._to_values(vqs._clone(klass=QuerySet)), (list, set)))
-        self.assrtTrue(isinstance(api._to_values(vqs._clone(klass=ValuesListQuerySet)), (list, set)))
-        self.assrtTrue(isinstance(api._to_values(list(vqs)), (list, set)))
-        self.assrtTrue(isinstance(api._to_values(vqs[0]), (list, set)))
+        self._ok(vqs)
+        self._ok(vqs._clone(klass=QuerySet))
+        self._ok(vqs._clone(klass=ValuesListQuerySet))
+        self._ok(list(vqs))
+        self._ok(vqs[0])
+        print vqs
+
+    def _ok(self, queryset):
+        self.assertTrue(isinstance(self.api._to_values(queryset), (list, set)))

@@ -21,6 +21,7 @@ class Inbox(models.Model):
 
 class Message(models.Model):
     """ Messages """
+    mailfrom = models.CharField(ugettext("mailfrom"), max_length="250", blank=True, null=True)
     subject = models.CharField(ugettext("subject"), max_length="250")
     body = models.TextField(ugettext("body"))
     ctime = models.DateTimeField(ugettext("ctime"), auto_now_add=True)

@@ -1,8 +1,7 @@
+#from django.conf import settings; settings.DEBUG = True
 from django.core.management import call_command
 from django.core.paginator import Paginator
-#from django.conf import settings; settings.DEBUG = True
 from testcases import TestServerTestCase
-#from .utils import id_generator
 
 import bizmobile
 from bizmobile.responsor import Responses
@@ -62,17 +61,14 @@ class PaginatorTestCase(TestServerTestCase):
         num = 0
         for num, i in enumerate(page1.object_list):
             print num, i
-            pass
         self.assertTrue(num == 99)
 
         num = 0
         for num, i in enumerate(page2.object_list):
             print num, i
-            pass
         self.assertTrue(num == 99)
 
         num = 0
         for num, i in enumerate(page3.object_list):
             print num, i
-            pass
         self.assertTrue(num == 45)
