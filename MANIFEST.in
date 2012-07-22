@@ -1,4 +1,4 @@
-include tox.in
+include tox.ini
 include README.rst
 include HISTORY.rst
 recursive-include tests *
