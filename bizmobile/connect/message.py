@@ -186,8 +186,8 @@ class Message(BaseAPI):
             elif isinstance(values, (dict, )):
                 values = [values]
             else:
-                raise ValueError(
-                    "Allowed type in values - (dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
+                raise ValueError("Allowed type in values - "
+                    "(list, set, dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
         return values
 
     def _tester(self, **kwargs):
