@@ -1,7 +1,6 @@
 from django.core.management import call_command
 from django.core.paginator import Paginator
-from django.conf import settings
-settings.DEBUG = True
+#from django.conf import settings; settings.DEBUG = True
 from testcases import TestServerTestCase
 #from .utils import id_generator
 
@@ -24,7 +23,7 @@ class PaginatorTestCase(TestServerTestCase):
         api = bizmobile.connect.message(
             server="127.0.0.1:8001", api_name="base", secure=False)
 
-        message = api.tester()
+        message = api._tester()
         p = Paginator(message, 100)
         self.assertTrue(p.count == 246)
         self.assertTrue(p.num_pages == 3)

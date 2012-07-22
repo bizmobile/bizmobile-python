@@ -64,16 +64,48 @@ class Message(BaseAPI):
                         u'id': 1
                      }
 
-        :param subject: mail subject
-        :param body: mail body
-        :param mailform: admin name
-        :param mailto: device ids
+        :param str subject: mail subject
+        :param str body: mail body
+        :param str mailform: admin name
+        :param list mailto: device ids
         :rtype: object
         :return: Response Object
         """
         assert isinstance(mailto, (list, tuple))
         data = [
             {"subject": subject, "body": body, "mailfrom": mailfrom, "mailto": to} for to in mailto]
+        push = self._client.operation.push
+        serializer = push.get_serializer()
+        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+
+    def push_messages(self, messages):
+        """
+        Read the `Message Interface <https://developer.bizmo.in/display/API/Message+Interface>`_
+
+        .. Note ::
+            messages 変換Object (to Dict)
+
+            1. QuerySet
+            #. QuerySetValues
+            #. QuerySetValuesList
+
+        return値 生データ ::
+
+        .. code-block:: python
+
+            sample = {
+                        u'opid': u'877280C4-89D6-49A7-B401-E3F27ED03144',
+                        u'utime': u'2012-01-31T10:40:16',
+                        u'ctime': u'2012-01-23T17:40:23',
+                        u'id': 1
+                     }
+
+        :param values: to values object
+        :rtype: object
+        :return: Response Object
+        """
+        data = self._to_values(messages)
+
         push = self._client.operation.push
         serializer = push.get_serializer()
         return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
@@ -114,7 +146,7 @@ class Message(BaseAPI):
               }]
             }
 
-        :param opid: opid is the return value from push_message.
+        :param str opid: opid is the return value from push_message.
         :rtype: object
         :return: PagerResponse Object
         """
@@ -126,7 +158,28 @@ class Message(BaseAPI):
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query), query)
 
-    def tester(self, **kwargs):
+    def _to_values(self, values):
+        """ QuerySetをvalusに変更
+
+        1. QuerySet
+        #. QuerySetValues
+        #. QuerySetValuesList
+
+        """
+        if not isinstance(values, (dict, )):
+            from django.db.query import (
+                QuerySet,
+                ValuesQuerySet,
+                ValuesListQuerySet
+            )
+            if isinstance(values, (QuerySet, ValuesListQuerySet)):
+                values = values._clone(klass=ValuesQuerySet)
+            else:
+                raise ValueError(
+                    "Allowed type in values - (dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
+        return values
+
+    def _tester(self, **kwargs):
         """ test method """
         page = kwargs.get("page", {"offset": 0, "limit": 20})
         if "page" in kwargs:
