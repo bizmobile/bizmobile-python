@@ -159,21 +159,32 @@ class Message(BaseAPI):
         return self._meta.responses(status, status.get(**query), query)
 
     def _to_values(self, values):
-        """ QuerySetをvalusに変更
+        """ valuesをlistに変更
 
-        1. QuerySet
-        #. QuerySetValues
-        #. QuerySetValuesList
+        Change types ::
+
+            1. QuerySet
+            #. QuerySetValues
+            #. QuerySetValuesList
+            #. dict
+
+        :param values:
+        :rtype: list
+        :return: [dict, dict, dict,, ]
 
         """
-        if not isinstance(values, (dict, )):
-            from django.db.query import (
+        if not isinstance(values, (list, set, )):
+            from django.db.models.query import (
                 QuerySet,
                 ValuesQuerySet,
                 ValuesListQuerySet
             )
-            if isinstance(values, (QuerySet, ValuesListQuerySet)):
-                values = values._clone(klass=ValuesQuerySet)
+            if isinstance(values, (ValuesQuerySet, )):
+                values = list(values)
+            elif isinstance(values, (QuerySet, ValuesListQuerySet)):
+                values = list(values._clone(klass=ValuesQuerySet))
+            elif isinstance(values, (dict, )):
+                values = [values]
             else:
                 raise ValueError(
                     "Allowed type in values - (dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
