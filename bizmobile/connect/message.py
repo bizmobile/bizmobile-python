@@ -20,6 +20,10 @@ from ..responsor import (
 __all__ = ["Message"]
 
 
+class AuthenticationError(Exception):
+    pass
+
+
 class Message(BaseAPI):
     """ MessageAPI  """
 
@@ -39,34 +43,38 @@ class Message(BaseAPI):
         :param str api_name:
         :param str api_version:
         :param str base_url:
-        :param object authenticate: HTTPDigestAuth, HTTPBasicAuth, HTTPProxyAuth
+        :param tuple auth: ("username", "password", )
         """
         super(Message, self).__init__(*args, **kwargs)
 
         self._meta.secure = kwargs.get("secure", self._meta.secure)
         self._meta.api_name = kwargs.get("api_name", self._meta.api_name)
         self._meta.api_version = kwargs.get("api_version", self._meta.api_version)
-        self._client = self._get_client(
-            kwargs.get("base_url", self.get_base_url()), kwargs.get("authenticate", self._get_authenticate()))
+
+        auth = kwargs.get("auth", None)
+        if auth is None:
+            raise AuthenticationError("error: no auth")
+        self._auth = auth
+        self._base_url = kwargs.get("base_url", self.get_base_url())
+        self._client = self._get_client()
         self._kw = kwargs
 
-    def _get_client(self, base_url=None, authenticate=None):
+    def _get_client(self, base_url=None):
         """
 
         :param str base_url:
-        :param object authenticate: HTTPDigestAuth, HTTPBasicAuth, HTTPProxyAuth
         """
         base_url = base_url or self.get_base_url()
-        auth = authenticate or self._get_authenticate()
-        return self._meta.client(base_url, auth=auth)
+        return self._meta.client(base_url, auth=self._get_authenticate())
 
-    def _get_authenticate(self, auth=("", "")):
+    def _get_authenticate(self, auth=None):
         """
 
         :param tuple auth: ("key", "token")
         :rtype: HTTPDigestAuth, HTTPBasicAuth, HTTPProxyAuth
         :return: Authenticate object
         """
+        auth = auth or self._auth
         return self._meta.authenticate(*auth)
 
     def get_base_url(self):
