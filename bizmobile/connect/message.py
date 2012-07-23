@@ -187,7 +187,7 @@ class Message(BaseAPI):
                 values = [values]
             else:
                 raise ValueError("Allowed type in values - "
-                    "(list, set, dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
+                    "(list, tuple, set, dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
         return values
 
     def _tester(self, **kwargs):
