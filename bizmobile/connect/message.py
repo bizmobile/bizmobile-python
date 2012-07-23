@@ -81,7 +81,7 @@ class Message(BaseAPI):
         Read the `Message Interface <https://developer.bizmo.in/display/API/Message+Interface>`_
 
         .. Note ::
-            messages 変換Object (to Dict)
+            messages 変換Object
 
             1. QuerySet
             #. QuerySetValues
@@ -98,7 +98,7 @@ class Message(BaseAPI):
                         u'id': 1
                      }
 
-        :param values: to values object
+        :param values: [dict, dict, dict]
         :rtype: object
         :return: Response Object
         """
@@ -183,11 +183,11 @@ class Message(BaseAPI):
                 values = list(values)
             elif isinstance(values, (QuerySet, ValuesListQuerySet)):
                 values = list(values._clone(klass=ValuesQuerySet))
-            elif isinstance(values, (dict, )):
-                values = [values]
+            # elif isinstance(values, (dict, )):
+                # values = [values]  #  紛らわしいので削除
             else:
                 raise ValueError("Allowed type in values - "
-                    "(list, tuple, set, dict, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
+                    "(list, tuple, set, QuerySet, ValuesQuerySet and ValuesListQuerySet)")
         return values
 
     def _tester(self, **kwargs):

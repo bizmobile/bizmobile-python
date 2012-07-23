@@ -30,7 +30,7 @@ class ToValuesTestCase(TestServerTestCase):
         self._ok(vqs._clone(klass=QuerySet))
         self._ok(vqs._clone(klass=ValuesListQuerySet))
         self._ok(list(vqs))
-        self._ok(vqs[0])
+        # self._ok(vqs[0])
         print vqs
 
     def _ok(self, queryset):
