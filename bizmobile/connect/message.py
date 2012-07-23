@@ -74,9 +74,7 @@ class Message(BaseAPI):
         assert isinstance(mailto, (list, tuple))
         data = [
             {"subject": subject, "body": body, "mailfrom": mailfrom, "mailto": to} for to in mailto]
-        push = self._client.operation.push
-        serializer = push.get_serializer()
-        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+        return self._push_message(data)
 
     def push_messages(self, messages):
         """
@@ -105,10 +103,7 @@ class Message(BaseAPI):
         :return: Response Object
         """
         data = self._to_values(messages)
-
-        push = self._client.operation.push
-        serializer = push.get_serializer()
-        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+        return self._push_message(data)
 
     def status_message(self, opid, **kwargs):
         """
@@ -158,6 +153,11 @@ class Message(BaseAPI):
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query), query)
 
+    def _push_message(self, data):
+        push = self._client.operation.push
+        serializer = push.get_serializer()
+        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+
     def _to_values(self, values):
         """ valuesをlistに変更
 
@@ -173,7 +173,7 @@ class Message(BaseAPI):
         :return: [dict, dict, dict,, ]
 
         """
-        if not isinstance(values, (list, set, )):
+        if not isinstance(values, (list, set, tuple, )):
             from django.db.models.query import (
                 QuerySet,
                 ValuesQuerySet,
