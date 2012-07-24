@@ -53,7 +53,7 @@ class BaseAPI(object):
         """ base """
         pass
 
-    def __init__(self, server, **kwargs):
+    def __init__(self, server):
         self.server = server
 
     def __repr__(self):
