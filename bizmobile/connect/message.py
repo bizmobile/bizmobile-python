@@ -3,6 +3,7 @@ import warnings
 
 # external
 import slumber
+from requests.auth import HTTPBasicAuth
 
 ## base
 from ..api import BaseAPI
@@ -19,15 +20,20 @@ from ..responsor import (
 __all__ = ["Message"]
 
 
+class AuthenticationError(Exception):
+    pass
+
+
 class Message(BaseAPI):
     """ MessageAPI  """
 
     class Meta:
+        secure = True
         api_name = "message"
         api_version = "v1"
-        secure = True
         response = Response
         responses = Responses
+        authenticate = HTTPBasicAuth
         client = slumber.API
 
     def __init__(self, *args, **kwargs):
@@ -36,18 +42,46 @@ class Message(BaseAPI):
         :param bool secure: https=True or http=False
         :param str api_name:
         :param str api_version:
+        :param str base_url:
+        :param tuple auth: ("username", "password", )
         """
-        self._meta.secure = kwargs.pop("secure", self._meta.secure)
-        self._meta.api_name = kwargs.pop("api_name", self._meta.api_name)
-        self._meta.api_version = kwargs.pop("api_version", self._meta.api_version)
-
         super(Message, self).__init__(*args, **kwargs)
-        self._client = self._meta.client(self.get_base_url(), auth=kwargs.pop("auth", None))
+
+        self._meta.secure = kwargs.get("secure", self._meta.secure)
+        self._meta.api_name = kwargs.get("api_name", self._meta.api_name)
+        self._meta.api_version = kwargs.get("api_version", self._meta.api_version)
+
+        auth = kwargs.get("auth", None)
+        if auth is None:
+            raise AuthenticationError("error: no auth")
+        self._auth = auth
+        self._base_url = kwargs.get("base_url", self.get_base_url())
+        self._client = self._get_client()
+        self._kw = kwargs
+
+    def _get_client(self, base_url=None):
+        """
+
+        :param str base_url:
+        """
+        base_url = base_url or self.get_base_url()
+        return self._meta.client(base_url, auth=self._get_authenticate())
+
+    def _get_authenticate(self, auth=None):
+        """
+
+        :param tuple auth: ("key", "token")
+        :rtype: HTTPDigestAuth, HTTPBasicAuth, HTTPProxyAuth
+        :return: Authenticate object
+        """
+        auth = auth or self._auth
+        return self._meta.authenticate(*auth)
 
     def get_base_url(self):
+        """ api url """
         schema = "https" if self._meta.secure else "http"
-        return "{0}://{1}/{2}/{3}/".format(schema, self.server,
-                                           self._meta.api_name, self._meta.api_version)
+        return "{0}://{1}/{2}/{3}/".format(
+            schema, self.server, self._meta.api_name, self._meta.api_version)
 
     def push_message(self, subject, body, mailfrom, mailto):
         """
@@ -105,6 +139,11 @@ class Message(BaseAPI):
         data = self._to_values(messages)
         return self._push_message(data)
 
+    def _push_message(self, data):
+        push = self._client.operation.push
+        serializer = push.get_serializer()
+        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+
     def status_message(self, opid, **kwargs):
         """
 
@@ -152,11 +191,6 @@ class Message(BaseAPI):
         status = self._client.operation.status
         query = dict({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query), query)
-
-    def _push_message(self, data):
-        push = self._client.operation.push
-        serializer = push.get_serializer()
-        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
 
     def _to_values(self, values):
         """ valuesをlistに変更
