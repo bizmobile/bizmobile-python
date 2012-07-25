@@ -180,6 +180,7 @@ class Message(BaseAPI):
             }
 
         :param str opid: opid is the return value from push_message.
+        :param list did: did filtering
         :rtype: object
         :return: PagerResponse Object
         """
