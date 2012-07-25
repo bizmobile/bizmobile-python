@@ -20,7 +20,7 @@ class PaginatorTestCase(TestServerTestCase):
     def test_pagination1(self):
 
         api = bizmobile.connect.message(
-            server="127.0.0.1:8001", api_name="base", secure=False)
+            server="127.0.0.1:8001", api_name="base", secure=False, auth=False)
 
         message = api._tester()
         p = Paginator(message, 100)

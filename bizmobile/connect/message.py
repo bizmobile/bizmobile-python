@@ -43,7 +43,7 @@ class Message(BaseAPI):
         :param str api_name:
         :param str api_version:
         :param str base_url:
-        :param tuple auth: ("username", "password", )
+        :param tuple auth: ("username", "password", ) or False
         """
         super(Message, self).__init__(*args, **kwargs)
 
@@ -51,10 +51,9 @@ class Message(BaseAPI):
         self._meta.api_name = kwargs.get("api_name", self._meta.api_name)
         self._meta.api_version = kwargs.get("api_version", self._meta.api_version)
 
-        auth = kwargs.get("auth", None)
-        if auth is None:
+        if kwargs.get("auth", None) is None:
             raise AuthenticationError("error: no auth")
-        self._auth = auth
+        self._auth = kwargs.get("auth", None)
         self._base_url = kwargs.get("base_url", self.get_base_url())
         self._client = self._get_client()
         self._kw = kwargs
@@ -75,7 +74,7 @@ class Message(BaseAPI):
         :return: Authenticate object
         """
         auth = auth or self._auth
-        return self._meta.authenticate(*auth)
+        return auth and self._meta.authenticate(*auth)
 
     def get_base_url(self):
         """ api url """
@@ -144,7 +143,7 @@ class Message(BaseAPI):
         serializer = push.get_serializer()
         return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
 
-    def status_message(self, opid, **kwargs):
+    def status_message(self, opid, dids=None, **kwargs):
         """
 
         Read the `Message Interface <https://developer.bizmo.in/display/API/Message+Interface>`_
@@ -184,12 +183,18 @@ class Message(BaseAPI):
         :rtype: object
         :return: PagerResponse Object
         """
+        query = dict()
+
+        if dids:
+            assert isinstance(dids, (list, tuple, set))
+            query.update({"dids": dids})
+
         page = kwargs.get("page", {"offset": 0, "limit": 20})
         if "page" in kwargs:
             warnings.warn("'page' is a deprecated method & will be removed by next version.")
 
         status = self._client.operation.status
-        query = dict({"opid": opid}.items() + page.items())
+        query.update({"opid": opid}.items() + page.items())
         return self._meta.responses(status, status.get(**query), query)
 
     def _to_values(self, values):

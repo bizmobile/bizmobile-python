@@ -14,7 +14,7 @@ class ToValuesTestCase(TestServerTestCase):
         super(ToValuesTestCase, self).setUp()
         self.start_test_server()
         self.api = bizmobile.connect.message(
-            server="127.0.0.1:8001", api_name="base", secure=False)
+            server="127.0.0.1:8001", api_name="base", secure=False, auth=False)
         call_command('loaddata', 'base_data.json')
 
     def tearDown(self):
