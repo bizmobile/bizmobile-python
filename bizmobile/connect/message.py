@@ -195,8 +195,9 @@ class Message(BaseAPI):
             warnings.warn("'page' is a deprecated method & will be removed by next version.")
 
         status = self._client.operation.status
+        serializer = status.get_serializer()
         query.update({"opid": opid}.items() + page.items())
-        return self._meta.responses(status, status.get(**query), query)
+        return self._meta.responses(status, serializer.loads(status.post(query)), query)
 
     def _to_values(self, values):
         """ valuesをlistに変更
