@@ -140,8 +140,7 @@ class Message(BaseAPI):
 
     def _push_message(self, data):
         push = self._client.operation.push
-        serializer = push.get_serializer()
-        return self._meta.response(push, serializer.loads(push.post(data)), self._meta.api_name)
+        return self._meta.response(push, push.post(data), self._meta.api_name)
 
     def status_message(self, opid, dids=None, **kwargs):
         """
@@ -195,9 +194,8 @@ class Message(BaseAPI):
             warnings.warn("'page' is a deprecated method & will be removed by next version.")
 
         status = self._client.operation.status
-        serializer = status.get_serializer()
         query.update({"opid": opid}.items() + page.items())
-        return self._meta.responses(status, serializer.loads(status.post(query)), query)
+        return self._meta.responses(status, status.post(query), query)
 
     def _to_values(self, values):
         """ valuesをlistに変更

@@ -5,6 +5,8 @@ Responsor
 :ctime: 2012-06-27T01:16:14
 """
 import copy
+import urlparse
+import urllib
 
 
 def parse_id(resouce_uri):
@@ -21,8 +23,11 @@ class Response(object):
 
     def __init__(self, client, response, name=""):
         self._client = client
-        self._response = response
         self._name = name
+        if isinstance(response, (str, unicode)):
+            self._response = self._client.get_serializer().loads(response)
+        else:
+            self._response = response
 
     def __repr__(self):
         return "<Response {0}: {1}>".format(self._name, self._response)
@@ -52,13 +57,17 @@ class Responses(object):
         self._client = client
         self._kwargs = kwargs
         self._query = query or dict()
+        self._serializer = False
+        self._iteration_num = None
+        self._responses = None
+        self._meta = None
+        self._objects = []
         self._response_class = kwargs.get("response_class", Response)
         self._set_objects(responses)  # set _responses, _meta, _objects
-        self._iteration_num = None
 
     def __repr__(self):
         return "<Responses {0} ({1}/{2})>".format(
-                    self._response_class, self._objects_count, len(self))
+                    self._response_class, len(self._objects), len(self))
 
     def __len__(self):
         """ total count """
@@ -90,10 +99,12 @@ class Responses(object):
                 limit = stop - start
 
                 self._iteration_num = limit
-                query = dict(self._query.items() + {"limit": limit, "offset": start}.items())
-                responses = self._get_responses(**query)
+                query = {"limit": limit, "offset": start}
+                parse = urlparse.urlparse(self._client._store["base_url"])
 
-                clone = self._clone(responses, _iteration_num=self._iteration_num)
+                responses = self._request("{0}/?{1}".format(parse.path, urllib.urlencode(query)))
+                clone = self._clone(
+                    responses, _iteration_num=self._iteration_num, _serializer=self._serializer)
                 try:
                     #  XXX: resource uri がない場合
                     clone._query.update({"id__in": clone._get_ids()})
@@ -117,7 +128,10 @@ class Responses(object):
 
     def _get_responses(self, **kwargs):
         """ base client response """
-        return self._client.get(**kwargs)
+        if self._serializer:
+            return self._client.post(kwargs)
+        else:
+            return self._client.get(**kwargs)
 
     def _get_ids(self):
         """ parse primary id """
@@ -127,8 +141,17 @@ class Responses(object):
         return self._response_class(self._client, dic)
 
     def _request(self, path):
-        """ base request """
-        return self._client("{0}&".format(path)).get()
+        """ base request
+        """
+        base_url = "{0}&".format(path)
+
+        if self._serializer:
+            data = self._query
+            parse = urlparse.urlparse(path)
+            data.update(urlparse.parse_qsl(parse.query))
+            return self._client(base_url).post(data)
+        else:
+            return self._client(base_url).get()
 
     def _next(self):
         """ request next page """
@@ -148,10 +171,12 @@ class Responses(object):
 
     def _set_objects(self, responses):
         """ set cache object """
+        if isinstance(responses, (str, unicode)):
+            self._serializer = True
+            responses = self._client.get_serializer().loads(responses)
         self._responses = responses
         self._meta = responses and responses["meta"]
         self._objects = dict(enumerate(responses["objects"])) if responses else []
-        self._objects_count = len(self._objects)
 
     def count(self):
         if self._responses:
